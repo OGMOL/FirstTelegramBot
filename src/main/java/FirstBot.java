@@ -11,6 +11,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
+import service.CurrencyConversionService;
 import service.CurrencyModeService;
 
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import java.util.Optional;
 public class FirstBot extends TelegramLongPollingBot {
 
     private final CurrencyModeService currencyModeService = CurrencyModeService.getInstance();
+    private final CurrencyConversionService currencyConversionService = CurrencyConversionService.getInstance();
 
     @Override
     @SneakyThrows
@@ -103,6 +105,28 @@ public class FirstBot extends TelegramLongPollingBot {
                 }
             }
         }
+        if (message.hasText()) {
+            String messageText = message.getText();
+            Optional<Double> value = parseDauble(messageText);
+            Currency originalCurrency = currencyModeService.getOriginalCurrency(message.getChatId());
+            Currency targetCurrency = currencyModeService.getTargetCurrency(message.getChatId());
+            double ratio = currencyConversionService.getConversionRatio(originalCurrency, targetCurrency);
+            if (value.isPresent()) {
+                execute(SendMessage.builder()
+                        .chatId(message.getChatId())
+                        .text(String.format("%4.2f %s is %4.2f %s", value.get(), originalCurrency, (value.get() * ratio), targetCurrency))
+                        .build());
+                return;
+            }
+        }
+    }
+
+    private Optional<Double> parseDauble(String messageText) {
+        try {
+            return Optional.of(Double.parseDouble(messageText));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 
     private String getCurrencyButton(Currency saved, Currency current) {
@@ -125,5 +149,4 @@ public class FirstBot extends TelegramLongPollingBot {
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
         telegramBotsApi.registerBot(bot);
     }
-
 }

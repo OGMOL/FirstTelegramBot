@@ -4,6 +4,7 @@ import entity.Currency;
 import service.impl.NbrbCurrencyConversionService;
 
 public interface CurrencyConversionService {
+
     static CurrencyConversionService getInstance() {
         return new NbrbCurrencyConversionService();
     }
