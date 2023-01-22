@@ -140,7 +140,7 @@ public class FirstBot extends TelegramLongPollingBot {
 
     @Override
     public String getBotToken() {
-        return "5898526581:AAHB3ZM_Ca9wp4e4zPm2Vxm6Alku1Mpqu4c";
+        return "link";
     }
 
     @SneakyThrows
